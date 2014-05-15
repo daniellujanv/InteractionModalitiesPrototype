@@ -5,6 +5,28 @@ import math
 ''' This module contains sets of functions useful for basic image analysis and should be useful in the SIGB course.
 Written and Assembled  (2012,2013) by  Dan Witzner Hansen, IT University.
 '''
+def getMidPointInLine(point1, point2):
+    centerX = (point2[0] - point1[0])/2
+    centerX = point1[0] + centerX
+    centerY = (point2[1] - point1[1])/2
+    centerY = point1[1] + centerY
+    return tuple((centerX, centerY))
+
+def getDistanceBetweenPoints(point1, point2):
+    x = point2[0]-point1[0]
+    y = point2[1] - point1[1]
+    x = x**2
+    y = y**2
+    return round(math.sqrt(x+y))
+
+def setText(image, (x, y), s):
+    cv2.putText(image, s, (x+1, y+1), cv2.FONT_HERSHEY_PLAIN, 1.0, (0, 0, 0), thickness = 2, lineType=cv2.CV_AA)
+    cv2.putText(image, s, (x, y), cv2.FONT_HERSHEY_PLAIN, 1.0, (255, 255, 255), lineType=cv2.CV_AA)
+    
+def printUsage():
+    print "Q or ESC: Stop"
+    print "SPACE: Pause"
+
 def showImages(**images):
     plt.figure(1)
     for (counter, (k,v)) in enumerate(images.items()): 
@@ -26,15 +48,12 @@ def getCircleSamples(center=(0,0),radius=1,nPoints=30):
     P = [(radius*np.cos(t)+center[0], radius*np.sin(t)+center[1],np.cos(t),np.sin(t) ) for t in s ]
     return P
 
-
-
-def getImageSequence(fn,fastForward =2):
-    '''Load the video sequence (fn) and proceeds, fastForward number of frames.'''
-    cap = cv2.VideoCapture(fn)
+def getImageSequence(capture, fastForward, frameNumber):
+    '''Load the video sequence (fileName) and proceeds, fastForward number of frames.'''
     for t in range(fastForward):
-        running, imgOrig = cap.read()  # Get the first frames
-    return cap,imgOrig,running
-
+        isSequenceOK, originalImage = capture.read()  # Get the first frames
+        frameNumber = frameNumber+1
+    return originalImage, isSequenceOK, frameNumber
 
 def getLineCoordinates(p1, p2):
     "Get integer coordinates between p1 and p2 using Bresenhams algorithm"
@@ -255,7 +274,6 @@ class ROISelector:
                 cv2.destroyWindow(self.winName)    
                 return self.setCorners(),True
                 break
-
 
 def rotateImage(I, angle):
     "Rotate the image, I, angle degrees around the image center"
